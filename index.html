@@ -7,6 +7,10 @@
     <!-- Fontes Futuristas -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     
+    <!-- SDKs do Firebase (Versão Compat para fácil integração via script puro) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --bg-color: #030508;
@@ -897,19 +901,65 @@
           "3A": "apego", "3B": "dogma", "3C": "ilusao", "3D": "persona", "3E": "sistema", "MASTER": "algoritmo"
         };
 
-        // ESTADO GLOBAL DA APLICAÇÃO (Persistência via LocalStorage)
-        let state = {
-          answers: JSON.parse(localStorage.getItem('node_answers') || '{}'),
-          publishedNodes: JSON.parse(localStorage.getItem('node_published') || '{}'),
-          currentUser: null
+        // =========================================================
+        // INICIALIZAÇÃO E INTEGRAÇÃO DO FIREBASE REALTIME DATABASE
+        // =========================================================
+        
+        // Configuração do seu projeto no Firebase Console (Substitua pelos seus dados)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "seu-projeto.firebaseapp.com",
+            databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "seu-app-id"
         };
 
-        function saveState() {
-            localStorage.setItem('node_answers', JSON.stringify(state.answers));
-            localStorage.setItem('node_published', JSON.stringify(state.publishedNodes));
+        // Inicializa o Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // ESTADO GLOBAL DA APLICAÇÃO (Sincronizado na Nuvem)
+        let state = {
+            answers: {},
+            publishedNodes: {},
+            currentUser: null
+        };
+
+        // Escutadores em Tempo Real para Atualizar as Telas Automaticamente
+        database.ref('node_answers').on('value', (snapshot) => {
+            state.answers = snapshot.val() || {};
+            refreshActiveScreen();
+        });
+
+        database.ref('node_published').on('value', (snapshot) => {
+            state.publishedNodes = snapshot.val() || {};
+            refreshActiveScreen();
+        });
+
+        function refreshActiveScreen() {
+            if (!state.currentUser) return;
+            if (state.currentUser.role === 'MASTER') {
+                renderMasterView();
+            } else if (state.currentUser.role === 'EXECUTOR') {
+                renderExecutorView();
+            } else if (state.currentUser.role === 'CLUSTER') {
+                renderViewerView('CLUSTER');
+            } else if (state.currentUser.role === 'CPU') {
+                renderViewerView('CPU');
+            }
         }
 
-        // INICIALIZAÇÃO
+        // Salvar alterações direto na Nuvem do Firebase
+        function saveState() {
+            database.ref('node_answers').set(state.answers);
+            database.ref('node_published').set(state.publishedNodes);
+        }
+
+        // INICIALIZAÇÃO DA PÁGINA
         window.onload = function() {
             toggleLoginFields();
         };
@@ -1124,7 +1174,6 @@
         function togglePublishNode(pubKey) {
             state.publishedNodes[pubKey] = !state.publishedNodes[pubKey];
             saveState();
-            renderMasterView();
         }
 
         function unassignStudent(matricula) {
@@ -1132,7 +1181,6 @@
                 delete state.answers[matricula].node;
                 delete state.answers[matricula].origem_alocacao;
                 saveState();
-                renderMasterView();
             }
         }
 
@@ -1149,14 +1197,12 @@
                 state.answers[matricula].origem_alocacao = 'MANUAL_PROFESSOR';
             }
             saveState();
-            renderMasterView();
         }
 
         function resetAnswer(matricula) {
             if(confirm("Excluir resposta do aluno para que ele responda novamente?")) {
                 delete state.answers[matricula];
                 saveState();
-                renderMasterView();
             }
         }
 
@@ -1357,7 +1403,6 @@
             };
 
             saveState();
-            renderExecutorView();
         }
 
         // =========================================================
@@ -1400,5 +1445,26 @@
             });
         }
     </script>
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCAsn_MwcOM8j3n12gUX98t3bmUNEHHYAs",
+  authDomain: "nodedensoalgoritmo.firebaseapp.com",
+  projectId: "nodedensoalgoritmo",
+  storageBucket: "nodedensoalgoritmo.firebasestorage.app",
+  messagingSenderId: "713758195581",
+  appId: "1:713758195581:web:67c50cdad22256e3ad1614",
+  measurementId: "G-W7FNHE8TTJ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 </body>
 </html>
