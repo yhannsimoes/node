@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NODE // Cyber Network Core</title>
+    <!-- Fontes Futuristas -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #030508;
+            --panel-bg: rgba(10, 15, 26, 0.85);
+            --metal-border: rgba(192, 210, 230, 0.35);
+            --neon-blue: #00d2ff;
+            --neon-blue-glow: rgba(0, 210, 255, 0.4);
+            --neon-green: #00ff88;
+            --neon-red: #ff0055;
+            --chrome-light: #e2f1ff;
+            --text-main: #d0e4ff;
+            --text-dim: #5c728e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(0, 150, 255, 0.08) 0%, transparent 60%),
+                linear-gradient(rgba(0, 210, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 210, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 25px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(3, 5, 8, 0.9) 100%);
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: 0 4px 25px var(--neon-blue-glow);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-container { display: flex; align-items: center; gap: 15px; }
+
+        .logo-frame {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            padding: 2px;
+            background: linear-gradient(135deg, #ffffff 0%, #4a6382 50%, #00d2ff 100%);
+            box-shadow: 0 0 15px var(--neon-blue-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-frame img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
+
+        .brand-text h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .brand-text span { font-size: 0.75rem; color: var(--neon-blue); letter-spacing: 2px; text-transform: uppercase; }
+
+        .sys-status { display: flex; align-items: center; gap: 15px; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; }
+
+        .status-badge {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(0, 210, 255, 0.1);
+            padding: 6px 14px; border: 1px solid var(--neon-blue);
+            border-radius: 4px; box-shadow: inset 0 0 8px var(--neon-blue-glow);
+        }
+
+        .dot { width: 8px; height: 8px; background-color: var(--neon-blue); border-radius: 50%; box-shadow: 0 0 10px var(--neon-blue); animation: pulse 1.5s infinite alternate; }
+
+        /* CONTAINERS & CARDS */
+        .main-container { padding: 25px; max-width: 1400px; margin: 0 auto; }
+
+        .cyber-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--metal-border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .cyber-card::before { content: ''; position: absolute; top: 0; left: 0; width: 12px; height: 12px; border-top: 2px solid var(--neon-blue); border-left: 2px solid var(--neon-blue); }
+        .cyber-card::after { content: ''; position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-bottom: 2px solid var(--neon-blue); border-right: 2px solid var(--neon-blue); }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--neon-blue);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .axis-header {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            color: var(--neon-green);
+            margin: 20px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px dashed rgba(0, 255, 136, 0.3);
+            text-transform: uppercase;
+        }
+
+        /* BOTÕES & INPUTS */
+        .cyber-button {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            border: 1px solid var(--metal-border);
+            color: #fff;
+            padding: 8px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .cyber-button:hover {
+            border-color: var(--neon-blue);
+            background: rgba(0, 210, 255, 0.2);
+            box-shadow: 0 0 15px var(--neon-blue-glow);
+            color: var(--neon-blue);
+        }
+
+        .cyber-button.btn-danger { border-color: var(--neon-red); }
+        .cyber-button.btn-danger:hover { background: rgba(255, 0, 85, 0.2); color: var(--neon-red); box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
+
+        .cyber-button.btn-success { border-color: var(--neon-green); }
+        .cyber-button.btn-success:hover { background: rgba(0, 255, 136, 0.2); color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); }
+
+        .cyber-input, .cyber-select {
+            background: rgba(5, 10, 20, 0.9);
+            border: 1px solid var(--metal-border);
+            color: #fff;
+            padding: 10px 14px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            border-radius: 4px;
+            width: 100%;
+            outline: none;
+        }
+
+        .cyber-input:focus, .cyber-select:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue-glow);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .checkbox-label:hover {
+            background: rgba(0, 210, 255, 0.1);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            accent-color: var(--neon-blue);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* GRID DE NODES DO MASTER */
+        .nodes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .node-card {
+            background: rgba(5, 12, 24, 0.9);
+            border: 1px solid var(--metal-border);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 280px;
+        }
+
+        .node-header {
+            border-bottom: 1px dashed var(--neon-blue);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .node-name { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: #fff; font-weight: bold; }
+        .node-cpu { font-size: 0.8rem; color: var(--neon-blue); margin-top: 2px; }
+
+        .node-students-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 5px;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            border-left: 2px solid var(--neon-blue);
+        }
+
+        .btn-remove-student {
+            color: var(--neon-red);
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 4px;
+            border: none;
+            background: none;
+            font-size: 1rem;
+        }
+        .btn-remove-student:hover { text-shadow: 0 0 8px var(--neon-red); }
+
+        /* TABELA DE EXECUTORES */
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
+
+        table.cyber-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        table.cyber-table th {
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            padding: 12px;
+            border-bottom: 1px solid var(--neon-blue);
+        }
+
+        table.cyber-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table.cyber-table tr:hover { background: rgba(0, 210, 255, 0.03); }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .badge-success { background: rgba(0, 255, 136, 0.15); color: var(--neon-green); border: 1px solid var(--neon-green); }
+        .badge-pending { background: rgba(255, 200, 0, 0.15); color: #ffc800; border: 1px solid #ffc800; }
+        .badge-manual { background: rgba(255, 0, 212, 0.15); color: #ff00d4; border: 1px solid #ff00d4; margin-left: 4px; }
+        .badge-algo { background: rgba(0, 210, 255, 0.15); color: var(--neon-blue); border: 1px solid var(--neon-blue); margin-left: 4px; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+
+        .modal-body {
+            background: var(--panel-bg); border: 1px solid var(--neon-blue);
+            width: 90%; max-width: 650px; border-radius: 12px; padding: 25px;
+            box-shadow: 0 0 30px var(--neon-blue-glow);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        /* FORMULÁRIO EXECUTOR */
+        .form-question { margin-bottom: 20px; }
+        .form-question label { display: block; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--neon-blue); margin-bottom: 8px; }
+
+        @keyframes pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand-container">
+            <div class="logo-frame">
+                <img src="logo.png" alt="NODE Logo" onerror="this.src='https://via.placeholder.com/50/000000/00d2ff?text=NODE'">
+            </div>
+            <div class="brand-text">
+                <h1>NODE</h1>
+                <span>O DENSO ALGORÍTMO DO SER</span>
+            </div>
+        </div>
+
+        <div class="sys-status">
+            <div id="currentUserBadge" class="status-badge hidden">
+                <span id="userRoleText">EXECUTOR</span>
+            </div>
+            <button id="btnLogout" class="cyber-button btn-danger hidden" onclick="logout()">SAIR</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <!-- =========================================================
+             1. TELA DE LOGIN
+             ========================================================= -->
+        <div id="screenLogin" class="cyber-card" style="max-width: 480px; margin: 40px auto;">
+            <div class="card-title">AUTENTICAÇÃO DE ACESSO</div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 5px;">PERFIL DE ACESSO</label>
+                <select id="loginRole" class="cyber-select" onchange="toggleLoginFields()">
+                    <option value="EXECUTOR">Executor (Estudante)</option>
+                    <option value="MASTER">Master (Professor)</option>
+                    <option value="CLUSTER">Cluster (Monitor)</option>
+                    <option value="CPU">CPU (Líder de Node)</option>
+                </select>
+            </div>
+
+            <!-- Turma (Para Executor, Cluster e CPU) -->
+            <div id="groupTurma" style="margin-bottom: 15px;">
+                <label style="font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 5px;">TURMA</label>
+                <select id="loginTurma" class="cyber-select" onchange="populateLoginStudents()">
+                    <option value="3A">3º A</option>
+                    <option value="3B">3º B</option>
+                    <option value="3C">3º C</option>
+                    <option value="3D">3º D</option>
+                    <option value="3E">3º E</option>
+                </select>
+            </div>
+
+            <!-- Seleção de Nome (Executor) -->
+            <div id="groupStudent" style="margin-bottom: 15px;">
+                <label style="font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 5px;">SEU NOME COMPLETO</label>
+                <select id="loginStudentName" class="cyber-select"></select>
+            </div>
+
+            <!-- Seleção de Nome CPU -->
+            <div id="groupCpu" style="margin-bottom: 15px;" class="hidden">
+                <label style="font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 5px;">SELECIONE A CPU</label>
+                <select id="loginCpuName" class="cyber-select"></select>
+            </div>
+
+            <!-- Senha / Chave -->
+            <div id="groupPassword" style="margin-bottom: 20px;">
+                <label id="lblPassword" style="font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 5px;">SENHA DA TURMA</label>
+                <input type="password" id="loginPassword" class="cyber-input" placeholder="Digite a chave de acesso...">
+            </div>
+
+            <button class="cyber-button" style="width: 100%; padding: 12px;" onclick="handleLogin()">ENTRAR NO SISTEMA</button>
+        </div>
+
+
+        <!-- =========================================================
+             2. TELA DO MASTER (PROFESSOR)
+             ========================================================= -->
+        <div id="screenMaster" class="hidden">
+            
+            <div class="cyber-card">
+                <div class="card-title">
+                    <span>PAINEL DE CONTROLE MASTER</span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-size: 0.85rem; color: var(--text-dim);">SELECIONAR TURMA:</span>
+                        <select id="masterTurmaSelect" class="cyber-select" style="width: 120px; padding: 4px 8px;" onchange="renderMasterView()">
+                            <option value="3A">3º A</option>
+                            <option value="3B">3º B</option>
+                            <option value="3C">3º C</option>
+                            <option value="3D">3º D</option>
+                            <option value="3E">3º E</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px;">
+                    Acompanhamento em tempo real dos Nodes da turma selecionada. Gerencie a alocação e publique a visualização para os executores.
+                </p>
+
+                <!-- Cards dos 5 Nodes -->
+                <div id="masterNodesGrid" class="nodes-grid"></div>
+            </div>
+
+            <!-- Tabela dos Executores -->
+            <div class="cyber-card">
+                <div class="card-title">
+                    <span>LISTA DE EXECUTORES DA SALA (<span id="masterStudentCount">0</span>)</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="cyber-table">
+                        <thead>
+                            <tr>
+                                <th>NOME DO EXECUTOR</th>
+                                <th>MATRÍCULA</th>
+                                <th>STATUS</th>
+                                <th>NODE ALOCADO</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="masterStudentTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- =========================================================
+             3. TELA DO EXECUTOR (FORMULÁRIO MULTIDIMENSIONAL)
+             ========================================================= -->
+        <div id="screenExecutor" class="hidden">
+            
+            <!-- Visão 1: Formulário de Resposta -->
+            <div id="execFormCard" class="cyber-card" style="max-width: 750px; margin: 0 auto;">
+                <div class="card-title">MAPEAMENTO DE PERFIL DO EXECUTOR</div>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px;">
+                    Responda aos 4 eixos abaixo. O algoritmo de balanceamento alocará seu perfil garantindo afinidade temática e complementaridade com seu grupo.
+                </p>
+
+                <form id="quizForm" onsubmit="handleFormSubmit(event)">
+                    
+                    <!-- EIXO 1 -->
+                    <div class="axis-header">EIXO 1: Leitura & Afinidade Temática</div>
+                    
+                    <div class="form-question">
+                        <label id="lblQ1">1. LEITURA DO CONTO DA TURMA</label>
+                        <select class="cyber-select" required id="q1">
+                            <option value="">Selecione uma opção...</option>
+                            <option value="Sim, fiz a leitura completa">Sim, fiz a leitura completa</option>
+                            <option value="Leitura parcial / Em andamento">Leitura parcial / Em andamento</option>
+                            <option value="Ainda não li">Ainda não li</option>
+                        </select>
+                    </div>
+
+                    <div class="form-question">
+                        <label>2. TÓPICO DE INTERESSE PRINCIPAL (Sua 1ª opção de Node)</label>
+                        <select class="cyber-select" required id="q2" onchange="updateQ3Options()">
+                            <option value="">Selecione a 1ª opção de tópico...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-question">
+                        <label>3. TÓPICO DE INTERESSE SECUNDÁRIO (Sua 2ª opção de Node)</label>
+                        <select class="cyber-select" required id="q3">
+                            <option value="">Selecione a 2ª opção de tópico...</option>
+                        </select>
+                    </div>
+
+                    <!-- EIXO 2 -->
+                    <div class="axis-header">EIXO 2: Habilidades Práticas (Escolha até 3)</div>
+                    <div class="form-question">
+                        <label>4. EM QUAIS ÁREAS VOCÊ CONSEGUE CONTRIBUIR ATIVAMENTE COM O SEU GRUPO?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="q4_skills" value="Manual/Artística" onchange="limitSkillsCheckboxes(this)">
+                                <span><strong>Manual / Artística:</strong> Prototipagem, artes visuais, cenografia ou trabalho artesanal.</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="q4_skills" value="Digital/Mídia" onchange="limitSkillsCheckboxes(this)">
+                                <span><strong>Digital & Mídia:</strong> Edição de áudio/vídeo, design gráfico ou uso de ferramentas digitais.</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="q4_skills" value="Pesquisa/Conteúdo" onchange="limitSkillsCheckboxes(this)">
+                                <span><strong>Pesquisa & Conteúdo:</strong> Curadoria de dados, investigação e checagem de fatos.</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="q4_skills" value="Redação/Escrita" onchange="limitSkillsCheckboxes(this)">
+                                <span><strong>Redação & Escrita:</strong> Escrita criativa, síntese textual ou elaboração de roteiro.</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="q4_skills" value="Oratória/Apresentação" onchange="limitSkillsCheckboxes(this)">
+                                <span><strong>Comunicação & Oratória:</strong> Apresentação em público, mediação ou facilitação de reuniões.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- EIXO 3 -->
+                    <div class="axis-header">EIXO 3: Disponibilidade Operacional</div>
+                    <div class="form-question">
+                        <label>5. COMO VOCÊ PREFERE SE ORGANIZAR PARA A REALIZAÇÃO DAS ATIVIDADES?</label>
+                        <select class="cyber-select" required id="q5">
+                            <option value="">Selecione uma opção de rotina...</option>
+                            <option value="Presencial Escolar (Somente no horário de aula)">Presencial Escolar (Somente nos horários de aula/escola)</option>
+                            <option value="Presencial Expandido (Disponibilidade fora da escola)">Presencial Expandido (Disponibilidade para encontros presenciais fora)</option>
+                            <option value="Remoto (Prioritariamente mensagens e reuniões virtuais)">Remoto (Prioritariamente mensagens e reuniões virtuais)</option>
+                            <option value="Híbrido (Transito bem entre encontros na escola e online)">Híbrido (Transito bem entre encontros na escola e online)</option>
+                        </select>
+                    </div>
+
+                    <!-- EIXO 4 -->
+                    <div class="axis-header">EIXO 4: Perfil e Dinâmica de Trabalho</div>
+                    <div class="form-question">
+                        <label>6. QUAL ESTILO MELHOR DESCREVE SUA FORMA DE ATUAR EM UMA EQUIPE?</label>
+                        <select class="cyber-select" required id="q6">
+                            <option value="">Selecione seu estilo de trabalho...</option>
+                            <option value="Perfil Executor (Prefiro tarefas diretas e focadas para entregar com eficiência)">Perfil Executor (Prefiro tarefas diretas e focadas para entregar com eficiência)</option>
+                            <option value="Perfil Autônomo/Criativo (Gosto de liberdade para propor caminhos e criar soluções)">Perfil Autônomo/Criativo (Gosto de liberdade para propor caminhos e criar soluções)</option>
+                            <option value="Perfil Articulador/Mediador (Busco equilibrar opiniões, alinhar prioridades e o bem comum)">Perfil Articulador/Mediador (Busco equilibrar opiniões e alinhar o grupo)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="cyber-button btn-success" style="width: 100%; padding: 12px; margin-top: 15px;">SUBMETER FORMULÁRIO E PROCESSAR NODE</button>
+                </form>
+            </div>
+
+            <!-- Visão 2: Tela de Resultado / Aguardo -->
+            <div id="execResultCard" class="cyber-card hidden" style="max-width: 600px; margin: 0 auto; text-align: center;">
+                <div class="card-title" style="justify-content: center;">ALOCAÇÃO DE NÓ</div>
+                
+                <div id="execWaiting" style="padding: 30px 10px;">
+                    <div class="dot" style="width: 20px; height: 20px; margin: 0 auto 20px auto;"></div>
+                    <h2 style="font-family: 'Orbitron'; color: var(--neon-blue); font-size: 1.3rem;">FORMULÁRIO COMPUTADO</h2>
+                    <p style="color: var(--text-dim); margin-top: 10px; font-size: 0.95rem;">
+                        Seu perfil foi analisado pelo algoritmo. Aguarde o Master (Professor) autorizar a publicação do Node para visualizar sua equipe.
+                    </p>
+                </div>
+
+                <div id="execPublished" class="hidden" style="padding: 20px;">
+                    <span style="font-size: 0.8rem; color: var(--neon-green); letter-spacing: 2px;">NODE PUBLICADO PELO MASTER</span>
+                    <h1 id="execNodeTitle" style="font-family: 'Orbitron'; font-size: 2rem; color: #fff; margin: 10px 0;">NODE ---</h1>
+                    <p style="color: var(--neon-blue); font-weight: bold; margin-bottom: 20px;">LÍDER CPU: <span id="execCpuTitle">---</span></p>
+
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--metal-border); border-radius: 8px; padding: 15px; text-align: left;">
+                        <h4 style="font-family: 'Orbitron'; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px;">INTEGRANTES DO SEU NODE:</h4>
+                        <div id="execTeamList" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- =========================================================
+             4. TELA DO CLUSTER / CPU (VISUALIZAÇÃO DE ACOMPANHAMENTO)
+             ========================================================= -->
+        <div id="screenViewer" class="hidden">
+            <div class="cyber-card">
+                <div class="card-title">
+                    <span id="viewerTitle">PAINEL DE ACOMPANHAMENTO</span>
+                    <span id="viewerSub" style="font-size: 0.85rem; color: var(--neon-blue);">---</span>
+                </div>
+                <div id="viewerGrid" class="nodes-grid"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE RESPOSTAS -->
+    <div id="modalAnswers" class="modal-overlay hidden">
+        <div class="modal-body">
+            <div class="card-title">
+                <span>MAPEAMENTO DETALHADO DO EXECUTOR</span>
+                <button class="cyber-button btn-danger" onclick="closeAnswersModal()">X</button>
+            </div>
+            <h3 id="modalStudentName" style="color: #fff; margin-bottom: 15px;">---</h3>
+            <div id="modalAnswersContent" style="display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+
+
+    <!-- DATA & LOGIC -->
+    <script>
+        // BANCO DE DADOS TEMÁTICO POR TURMA
+        const THEMES_DB = {
+          "3A": {
+            conto: "Robbie",
+            tema: "O Apego",
+            nodes: [
+              { name: "Afeto", topic: "A Tecnologia como Suporte Afetivo Primário" },
+              { name: "Curadoria", topic: "Terceirização do Cuidado e Curadoria de Conteúdo" },
+              { name: "Isolamento", topic: "Hiperconectividade e Câmaras de Eco" },
+              { name: "Dissonância", topic: "Tecnofobia vs. Adaptação (Dissonância Cognitiva)" },
+              { name: "Hiperestímulo", topic: "O Virtual Substituindo o Biológico via Clickbaits" }
+            ]
+          },
+          "3B": {
+            conto: "Razão",
+            tema: "O Dogma",
+            nodes: [
+              { name: "Negacionismo", topic: "Negacionismo e Era da Pós-verdade" },
+              { name: "Bolha", topic: "Construção Radical das Câmaras de Eco" },
+              { name: "Desinformação", topic: "Efeito de Manada via Desinformação" },
+              { name: "Cegueira", topic: "Cegueira Algorítmica e Reforço de Crenças" },
+              { name: "Pragmatismo", topic: "Pragmatismo Diante da Misinformação" }
+            ]
+          },
+          "3C": {
+            conto: "Mentiroso!",
+            tema: "A Ilusão",
+            nodes: [
+              { name: "Viés", topic: "Armadilha do Viés de Confirmação" },
+              { name: "Validação", topic: "Validação Externa e Ilusão dos Algoritmos" },
+              { name: "Alucinação", topic: "\"Alucinações\" da IA e Fact-checking" },
+              { name: "Engajamento", topic: "Ética do Engajamento e Cidadania Digital" },
+              { name: "Colapso", topic: "Sobrecarga de Informação e Dissonância" }
+            ]
+          },
+          "3D": {
+            conto: "Prova",
+            tema: "A Persona",
+            nodes: [
+              { name: "Deepfake", topic: "Crise de Autenticidade e Deepfakes" },
+              { name: "Privacidade", topic: "Privacidade vs. Mal-information" },
+              { name: "Espetáculo", topic: "Teatro das Redes e Clickbait" },
+              { name: "Origem", topic: "Manipulação do Debate Público" },
+              { name: "Discernimento", topic: "Brechas Éticas e Leitura Lateral" }
+            ]
+          },
+          "3E": {
+            conto: "O Conflito Evitável",
+            tema: "O Sistema",
+            nodes: [
+              { name: "Controle", topic: "Ditadura dos Algoritmos" },
+              { name: "Passividade", topic: "Perda de Agência e Pós-verdade" },
+              { name: "Utilitarismo", topic: "Utilitarismo e Falha na Curadoria" },
+              { name: "Censura", topic: "Censura Discreta (Shadowbanning)" },
+              { name: "Conveniência", topic: "Prisão Digital e Cidadania Passiva" }
+            ]
+          }
+        };
+
+        // BANCO DE DADOS COMPLETO - EXECUTORES PUROS (180 ALUNOS)
+        const EXECUTORS_DB = [
+            {"matricula": "3269015", "nome": "ALLYF RICARDO ALVES DA SILVA", "turma": "3A"},
+{"matricula": "3621730", "nome": "ANA CLARA PEREIRA MONTENEGRO", "turma": "3A"},
+{"matricula": "2839375", "nome": "ARTHUR FIRMINO DOS SANTOS", "turma": "3A"},
+{"matricula": "3621653", "nome": "BIANKA VITORIA DA SILVA", "turma": "3A"},
+{"matricula": "2775184", "nome": "DIEGO CASSIO LINS DE MOURA", "turma": "3A"},
+{"matricula": "3797074", "nome": "EDUARDO FERNANDES DE LUCENA SILVA", "turma": "3A"},
+{"matricula": "3713633", "nome": "ELYSON GABRIEL GONCALVES COUTINHO DE LIMA", "turma": "3A"},
+{"matricula": "3623921", "nome": "EUGENIA RAMOS MARQUES", "turma": "3A"},
+{"matricula": "2757793", "nome": "FERNANDA ELLEN SANTOS AST", "turma": "3A"},
+{"matricula": "3609547", "nome": "GABRIEL AUGUSTO DAS NEVES", "turma": "3A"},
+{"matricula": "2968007", "nome": "GABRIEL FERNANDES ALVES DA SILVA", "turma": "3A"},
+{"matricula": "2750793", "nome": "IAGO GABRIEL IDALINO DA SILVA", "turma": "3A"},
+{"matricula": "2631169", "nome": "JAMMILLY GHABRIELLY SOARES RAMOS", "turma": "3A"},
+{"matricula": "3903239", "nome": "JOANA RAKELY NEVES TRAJANO", "turma": "3A"},
+{"matricula": "2753355", "nome": "JORGE RAMDE EUSTAQUIO DE AQUINO", "turma": "3A"},
+{"matricula": "3609673", "nome": "KAUA VICTOR SOUZA DE LIMA", "turma": "3A"},
+{"matricula": "3615641", "nome": "LARA VICTORIA ALBUQUERQUE MOURA", "turma": "3A"},
+{"matricula": "3616540", "nome": "LARISSA RIBEIRO DA SILVA", "turma": "3A"},
+{"matricula": "3616476", "nome": "LIVIA LINS DE MELO", "turma": "3A"},
+{"matricula": "3609282", "nome": "LUCAS GONCALVES RIBEIRO DA COSTA", "turma": "3A"},
+{"matricula": "3622543", "nome": "LUIZA MARIANE GAMA DE BARROS", "turma": "3A"},
+{"matricula": "3130338", "nome": "MARIA EDUARDA ALBUQUERQUE DE SOUSA", "turma": "3A"},
+{"matricula": "3617486", "nome": "MARIA EDUARDA DA SILVA SANTOS", "turma": "3A"},
+{"matricula": "3616754", "nome": "MARIA LAURA VILLAR SANTANA", "turma": "3A"},
+{"matricula": "3796949", "nome": "MARIANA SILVA DO NASCIMENTO", "turma": "3A"},
+{"matricula": "3715484", "nome": "MATHEUS VICTOR DE ALMEIDA SILVA", "turma": "3A"},
+{"matricula": "3609432", "nome": "MAX CARVALHO MAXIMIANO", "turma": "3A"},
+{"matricula": "3608683", "nome": "MIGUEL DOS PRAZERES GARRETT", "turma": "3A"},
+{"matricula": "2729377", "nome": "PEDRO MIGUEL DE FRANCA NUNES", "turma": "3A"},
+{"matricula": "3617378", "nome": "RHAYSSA GABRIELLY PEREIRA DE MORAIS", "turma": "3A"},
+{"matricula": "3101656", "nome": "SAMUEL OLYVER DE ANDRADE BEZERRA", "turma": "3A"},
+{"matricula": "3634238", "nome": "SUZANNAH AYSHA ANDRADE FERREIRA DA SILVA", "turma": "3A"},
+{"matricula": "3830844", "nome": "URIELE GOMES RIBEIRO", "turma": "3A"},
+{"matricula": "3639270", "nome": "VINNICIUS GABRIEL DE LIMA FERREIRA", "turma": "3A"},
+{"matricula": "3607072", "nome": "VITOR GABRIEL DA SILVA OLIVEIRA", "turma": "3A"},
+{"matricula": "3624022", "nome": "YASMIM SILVA COUTINHO", "turma": "3A"},
+{"matricula": "2556724", "nome": "YCARO LUCAS ARAUJO DA SILVA", "turma": "3A"},
+{"matricula": "3711766", "nome": "ALICIA GOMES DA SILVA MIRANDA", "turma": "3B"},
+{"matricula": "2771462", "nome": "ADRYELI OLIVEIRA DA SILVA", "turma": "3B"},
+{"matricula": "3651873", "nome": "ANA CAROLINA DA MATA RIBEIRO ALBUQUERQUE", "turma": "3B"},
+{"matricula": "2878714", "nome": "ANA GABRIELI JORDAO GOMES DA SILVA", "turma": "3B"},
+{"matricula": "3651794", "nome": "ELIZABETH MONTEIRO DA COSTA SILVA", "turma": "3B"},
+{"matricula": "2919834", "nome": "GABRIEL BENICIO DA SILVA MATIAS", "turma": "3B"},
+{"matricula": "3678053", "nome": "GABRIEL LUCAS NASCIMENTO DE SANTANA", "turma": "3B"},
+{"matricula": "3511524", "nome": "IRLAN MARQUES CUSTODIO", "turma": "3B"},
+{"matricula": "3682232", "nome": "IZADORA BITENCURT DE LIMA SILVA", "turma": "3B"},
+{"matricula": "3115650", "nome": "JOAO PEDRO MENEZES DA SILVA", "turma": "3B"},
+{"matricula": "2872371", "nome": "JOAO VICTOR SILVA DIAS", "turma": "3B"},
+{"matricula": "3634672", "nome": "KAIKY RYAN MELO DE LIMA", "turma": "3B"},
+{"matricula": "3622978", "nome": "KAUA VINICIUS ANDRADE CORREIA", "turma": "3B"},
+{"matricula": "2804189", "nome": "KAUANE GRAZIELI FRANCA DOS SANTOS", "turma": "3B"},
+{"matricula": "3639707", "nome": "LAIS NOVAES DE ALBUQUERQUE PESSOA", "turma": "3B"},
+{"matricula": "2776620", "nome": "LAYANNY GOMES DA SILVA", "turma": "3B"},
+{"matricula": "2730057", "nome": "LAYS MENEZES CAVALCANTI", "turma": "3B"},
+{"matricula": "2736105", "nome": "LUANA RAFAELA DE FARIAS OLIVEIRA", "turma": "3B"},
+{"matricula": "3623077", "nome": "LUCAS IAN LOQUINGEN", "turma": "3B"},
+{"matricula": "3477330", "nome": "LUIZ MIGUEL LOPES DA SILVA", "turma": "3B"},
+{"matricula": "3682872", "nome": "MANUELLA LAURINDO MATOS TRAVASSOS DE LIMA", "turma": "3B"},
+{"matricula": "3621883", "nome": "MARIA CLARA ALVES DO NASCIMENTO", "turma": "3B"},
+{"matricula": "3622491", "nome": "MARIA ELLYS OLIVEIRA DA SILVA AMORIM", "turma": "3B"},
+{"matricula": "3547931", "nome": "MATHEUS LUIZ RODRIGUES DA SILVA", "turma": "3B"},
+{"matricula": "3622018", "nome": "MIRELLA VITORIA ALVES CORDEIRO", "turma": "3B"},
+{"matricula": "3549794", "nome": "NYCOLAS DYMAS DOS SANTOS DE LUCENA", "turma": "3B"},
+{"matricula": "3682245", "nome": "SABRINA VIANA PEREZ", "turma": "3B"},
+{"matricula": "3651181", "nome": "SELTON RENAN NÓBREGA DA SILVA", "turma": "3B"},
+{"matricula": "3680570", "nome": "SOPHIA ISABELLA DE ASSIS LIMA", "turma": "3B"},
+{"matricula": "3636848", "nome": "STHEFANNY AUREA TEMOTIO SILVA", "turma": "3B"},
+{"matricula": "2751549", "nome": "THAYNA CRISLEYD SILVA ARAUJO", "turma": "3B"},
+{"matricula": "2727044", "nome": "VICTOR GABRIEL DA COSTA QUEIROZ", "turma": "3B"},
+{"matricula": "3623170", "nome": "VICTOR LUCAS NERY DA SILVA", "turma": "3B"},
+{"matricula": "2735685", "nome": "WENDEL LUNA OLIVEIRA DA SILVA", "turma": "3B"},
+{"matricula": "3622089", "nome": "YASMIM VITORIA RODRIGUES DA SILVA SANTO", "turma": "3B"},
+{"matricula": "3248844", "nome": "ANA BEATRIZ OLIVEIRA DA SILVA", "turma": "3C"},
+{"matricula": "3687945", "nome": "ANA BEATRIZ SANTOS OLIVEIRA", "turma": "3C"},
+{"matricula": "3051223", "nome": "ALINE REBECCA DA SILVA", "turma": "3C"},
+{"matricula": "3287813", "nome": "ARTHUR AIRON AUGUSTO RODRIGUES SOEIRO", "turma": "3C"},
+{"matricula": "3509337", "nome": "ARTHUR LEONARDO RAMOS DA SILVA RODRIGUES", "turma": "3C"},
+{"matricula": "3627845", "nome": "BERNARDO LASMAR TIMOTEO DA SILVA", "turma": "3C"},
+{"matricula": "2791300", "nome": "BRUNO HENRIQUE SILVA DE LIMA", "turma": "3C"},
+{"matricula": "3857756", "nome": "CAIO CAVALCANTI BRITO", "turma": "3C"},
+{"matricula": "3624421", "nome": "DAPHENY MARCELLA SILVA AMORIM", "turma": "3C"},
+{"matricula": "3810095", "nome": "EDUARDO CARDOSO RODRIGUES DE LIMA", "turma": "3C"},
+{"matricula": "3605974", "nome": "ELAINE VITORIA DA SILVA CHAVES", "turma": "3C"},
+{"matricula": "3651441", "nome": "ELOAH SOFIA DE BARROS TORRES", "turma": "3C"},
+{"matricula": "3512418", "nome": "EMILLY VITORIA CELESTINO DE SOUZA", "turma": "3C"},
+{"matricula": "2773486", "nome": "EVERTON VINICIUS DANTAS SANTOS", "turma": "3C"},
+{"matricula": "3624676", "nome": "GEOVANNA SIQUEIRA SANTIAGO", "turma": "3C"},
+{"matricula": "3613090", "nome": "JAMILLY LETICIA MONTE DE SOUZA", "turma": "3C"},
+{"matricula": "3475494", "nome": "JOAO LUCAS GUIMARAES DE AQUINO", "turma": "3C"},
+{"matricula": "3166103", "nome": "JOAO VITOR GOMES DA SILVA", "turma": "3C"},
+{"matricula": "3623711", "nome": "JOAO VITOR VIEIRA SOUZA DE ALMEIDA", "turma": "3C"},
+{"matricula": "3686283", "nome": "JULIA RIHANNA DA COSTA CANDIDO", "turma": "3C"},
+{"matricula": "3623107", "nome": "KAUA SOUZA DE ALMEIDA", "turma": "3C"},
+{"matricula": "2974372", "nome": "KAUAN BATISTA PRADO", "turma": "3C"},
+{"matricula": "3621787", "nome": "LAURA SOFIA CRUZ SIQUEIRA", "turma": "3C"},
+{"matricula": "2900628", "nome": "LAVINYA MARIA DE SOUZA", "turma": "3C"},
+{"matricula": "3625120", "nome": "MARIA LUIZA ALVES ARAUJO", "turma": "3C"},
+{"matricula": "2927583", "nome": "MARINA ALMEIDA MACHADO PINTO", "turma": "3C"},
+{"matricula": "2793691", "nome": "MATEUS VINICIOS DA SILVA SANTOS", "turma": "3C"},
+{"matricula": "3687289", "nome": "MATHEUS FERNANDO VIEIRA DA SILVA", "turma": "3C"},
+{"matricula": "3638662", "nome": "MATHEUS ROBBERTO TOME DA SILVA", "turma": "3C"},
+{"matricula": "3477322", "nome": "MELISSA MARIA ALBUQUERQUE FREITAS", "turma": "3C"},
+{"matricula": "2761723", "nome": "MIRELLE FERNANDA MARTINS DA SILVA", "turma": "3C"},
+{"matricula": "2989197", "nome": "PEDRO HENRIQUE DA SILVA SANTANA", "turma": "3C"},
+{"matricula": "3333136", "nome": "RAFAEL BARROS DE SENA", "turma": "3C"},
+{"matricula": "3094585", "nome": "SAULO ALVES AVELINO FILHO", "turma": "3C"},
+{"matricula": "2772726", "nome": "VALDIR JOAO DA SILVA NETO", "turma": "3C"},
+{"matricula": "3684165", "nome": "VLADIMIR PERNAMBUCANO MONTENEGRO DE ARAUJO", "turma": "3C"},
+{"matricula": "3838326", "nome": "ALINE PEREIRA SILVINO DOS SANTOS", "turma": "3D"},
+{"matricula": "3739419", "nome": "ALICE ALVARENGA DIAS DE MELO", "turma": "3D"},
+{"matricula": "3639718", "nome": "ALLANA BEATRIZ BATISTA DA MATA", "turma": "3D"},
+{"matricula": "3723119", "nome": "ANNA LUIZA APOLINARIA DA SILVA", "turma": "3D"},
+{"matricula": "3639044", "nome": "ARNALDO FERREIRA FREITAS DE MELO", "turma": "3D"},
+{"matricula": "3652626", "nome": "BIANCA SANTOS ARAUJO", "turma": "3D"},
+{"matricula": "3653973", "nome": "CLARA NIKOLLY PRATTI DE SIQUEIRA GOMES", "turma": "3D"},
+{"matricula": "2804156", "nome": "CLEIBSON ARTUR ALVES DE MELO", "turma": "3D"},
+{"matricula": "2763355", "nome": "DAVI MELO DA SILVA", "turma": "3D"},
+{"matricula": "3679135", "nome": "ELOISA SILVA DE MENDONÇA", "turma": "3D"},
+{"matricula": "3410503", "nome": "EVELLYN OLIVEIRA VENANCIO DOS SANTOS", "turma": "3D"},
+{"matricula": "3636880", "nome": "GABRIELA VITORIA FARIAS DE OLIVEIRA", "turma": "3D"},
+{"matricula": "3687280", "nome": "GABRIELLY ARAUJO ALVES DA SILVA", "turma": "3D"},
+{"matricula": "3664527", "nome": "GEOVANE LUIZ DE FRANÇA NETO", "turma": "3D"},
+{"matricula": "3396431", "nome": "HELOISA SOUZA BARBOSA DO ESPIRITO SANTO", "turma": "3D"},
+{"matricula": "3228263", "nome": "HUGO CAUAN XAVIER DE LIMA", "turma": "3D"},
+{"matricula": "3680506", "nome": "HUGO VINICIUS NUNES DE OLIVEIRA", "turma": "3D"},
+{"matricula": "3641754", "nome": "JONATAS SILVA DOS SANTOS", "turma": "3D"},
+{"matricula": "2772215", "nome": "JULYA GEOVANNA FERREIRA DE BRITO", "turma": "3D"},
+{"matricula": "2776683", "nome": "KAUAN ALVES DOS SANTOS", "turma": "3D"},
+{"matricula": "2773333", "nome": "KAUAN HENRIQUE DA SILVA LIMA", "turma": "3D"},
+{"matricula": "3667718", "nome": "LAURA DOS SANTOS COUTINHO PACIFICO", "turma": "3D"},
+{"matricula": "3666451", "nome": "LAURA REGINA MIRANDA DA SILVA", "turma": "3D"},
+{"matricula": "3640773", "nome": "LETICIA HELENA RODRIGUES SIMAO", "turma": "3D"},
+{"matricula": "3661419", "nome": "LIVIA MARIANA BATISTA", "turma": "3D"},
+{"matricula": "3661372", "nome": "MARIA ANNA BEATRIZ SILVA LAGO", "turma": "3D"},
+{"matricula": "2802493", "nome": "MARIA EDUARDA SANTOS DE JESUS", "turma": "3D"},
+{"matricula": "2754092", "nome": "MARIA LUIZA OLIVEIRA DOS SANTOS", "turma": "3D"},
+{"matricula": "3636743", "nome": "MARIA VITORIA DA PAZ SILVA", "turma": "3D"},
+{"matricula": "3640159", "nome": "MIKAELLE LAYS DA SILVA LIRA", "turma": "3D"},
+{"matricula": "2755803", "nome": "NAIARA RAFAELA RODRIGUES DA SILVA", "turma": "3D"},
+{"matricula": "3663384", "nome": "PEDRO HENRIQUE CAVALCANTI DA SILVA", "turma": "3D"},
+{"matricula": "3634024", "nome": "PEDRO HENRIQUE FERREIRA GONCALVES", "turma": "3D"},
+{"matricula": "3617561", "nome": "SARA LETICIA LEDO DOS SANTOS PEREIRA", "turma": "3D"},
+{"matricula": "3625016", "nome": "WENDELL LUIZ RODRIGUES DA SILVA", "turma": "3D"},
+{"matricula": "2877902", "nome": "ANA VITORIA LINS DA SILVA", "turma": "3E"},
+{"matricula": "3649181", "nome": "AMANDA CAMILA ALVES DA SILVA", "turma": "3E"},
+{"matricula": "3613088", "nome": "ANNA BEATRIZ SABINO DA SILVA", "turma": "3E"},
+{"matricula": "2966203", "nome": "ANNA JULIA GOMES DA SILVA", "turma": "3E"},
+{"matricula": "3650320", "nome": "ARTHUR FELIPE FERREIRA MOREIRA DA SILVA", "turma": "3E"},
+{"matricula": "3649218", "nome": "BRUNA GABRIELLE DE ARAUJO PENIDES", "turma": "3E"},
+{"matricula": "3368793", "nome": "CAIO MUNIZ MARQUES", "turma": "3E"},
+{"matricula": "3682198", "nome": "ELIEL DAVI ALVES DE ANDRADE OLIVEIRA", "turma": "3E"},
+{"matricula": "3661160", "nome": "ESTELA MARIA TEODOSIO NUNES", "turma": "3E"},
+{"matricula": "3651496", "nome": "EVERTON PIETRO NUNES DE SOUZA", "turma": "3E"},
+{"matricula": "3650038", "nome": "GIOVANNA VICTORIA FIGUEROA LIMA", "turma": "3E"},
+{"matricula": "2748434", "nome": "IHAGO ARAUJO TAVARES DA SILVA SANTOS", "turma": "3E"},
+{"matricula": "3646092", "nome": "JERFFERSON PEREIRA DE ARAUJO JUNIOR", "turma": "3E"},
+{"matricula": "2980878", "nome": "JOSIANE DUARTE COSTA", "turma": "3E"},
+{"matricula": "3651604", "nome": "JULIA BEATRIZ LIMA DA SILVA", "turma": "3E"},
+{"matricula": "3651689", "nome": "KALLYNE VIVIAN ALVES BARBOSA DA SILVA", "turma": "3E"},
+{"matricula": "2888007", "nome": "KAUANNY VITORIA DA SILVA AQUINO", "turma": "3E"},
+{"matricula": "3710078", "nome": "KETHLLY BRENDA TRAJANO DA SILVA", "turma": "3E"},
+{"matricula": "2873235", "nome": "LAYSA EMILY DE LIMA SILVA ROSA", "turma": "3E"},
+{"matricula": "3649102", "nome": "LINA DOS SANTOS FRISCHHERZ", "turma": "3E"},
+{"matricula": "3651228", "nome": "LUCAS AVELINO CALADO", "turma": "3E"},
+{"matricula": "3650655", "nome": "MARIA CLARA CARNEIRO DE LIMA", "turma": "3E"},
+{"matricula": "2869866", "nome": "MARIA EDUARDA LOPES FERREIRA", "turma": "3E"},
+{"matricula": "3612834", "nome": "PAULO GUILHERME DA SILVA PEREIRA", "turma": "3E"},
+{"matricula": "2849010", "nome": "RAFAEL RODRIGUES DE OLIVEIRA", "turma": "3E"},
+{"matricula": "3682266", "nome": "RAI ALVES GALVAO VITAL DE SOUZA", "turma": "3E"},
+{"matricula": "3682912", "nome": "RIAN VICTOR SILVA DOS SANTOS", "turma": "3E"},
+{"matricula": "3649644", "nome": "RIHANNA ISABELLA DE CESARIS REIS", "turma": "3E"},
+{"matricula": "3603050", "nome": "RODRYGO FERREIRA ARAUJO", "turma": "3E"},
+{"matricula": "3238045", "nome": "RYAN FIDELIS DE LIMA", "turma": "3E"},
+{"matricula": "3651941", "nome": "SARAH BIANCA BRAGA TENORIO", "turma": "3E"},
+{"matricula": "3640414", "nome": "THIFFANY GABRIELLY DA SILVA LIMA", "turma": "3E"},
+{"matricula": "2762998", "nome": "THYPHANNY NICOLLY DE SANTANA", "turma": "3E"},
+{"matricula": "3649355", "nome": "WALLYSON DA SILVA BEZERRA", "turma": "3E"},
+{"matricula": "3299803", "nome": "WANDERSON DA SILVA TAVARES", "turma": "3E"},
+{"matricula": "3652137", "nome": "YASMIN BORGES DA SILVA", "turma": "3E"},
+{"matricula": "3646250", "nome": "YGOR GUERRA DE SOUZA RAMOS", "turma": "3E"}          
+        ];
+
+        const CPUS_DB = {
+          "3A": [
+            {nome: "WAGNNER PEREIRA DA SILVA SANTOS", node: "Afeto", login: "cpusantos"},
+            {nome: "LUANA BEATRIZ PESSOA DE OLIVEIRA", node: "Curadoria", login: "cpuoliveira"},
+            {nome: "ARTHUR FIRMINO DOS SANTOS", node: "Isolamento", login: "cpusantos"},
+            {nome: "CARLOS EDUARDO MARQUES DE OLIVEIRA", node: "Dissonância", login: "cpuoliveira"},
+            {nome: "MAYANNE GOMES DE ARAUJO", node: "Hiperestímulo", login: "cpuaraujo"}
+          ],
+          "3B": [
+            {nome: "CECILIA ALVES DE LIMA", node: "Negacionismo", login: "cpulima"},
+            {nome: "MARIA FERNANDA DA SILVA LUZ", node: "Bolha", login: "cpuluz"},
+            {nome: "MARIA FERNANDA DA SILVA MELO", node: "Desinformação", login: "cpumelo"},
+            {nome: "FAGNER DE MENEZES RAPOSO SANTIAGO", node: "Cegueira", login: "cpusantiago"},
+            {nome: "ARTHUR MENEZES VIEIRA DE CARVALHO", node: "Pragmatismo", login: "cpucarvalho"}
+          ],
+          "3C": [
+            {nome: "LAURA ALBUQUERQUE DE ANDRADE", node: "Viés", login: "cpuandrade"},
+            {nome: "ISABELLA SOARES DE ALMEIDA", node: "Validação", login: "cpualmeida"},
+            {nome: "ROBERTA MARIA DOS SANTOS", node: "Alucinação", login: "cpusantos"},
+            {nome: "GUILHERME GABRIEL FELICIO GOMES DOS SANTOS", node: "Engajamento", login: "cpusantos"},
+            {nome: "KETHURA BEATRIZ SILVA", node: "Colapso", login: "cpusilva"}
+          ],
+          "3D": [
+            {nome: "EDUARDA VICTORIA DE OLIVEIRA E SILVA", node: "Deepfake", login: "cpusilva"},
+            {nome: "THIAGO BARBOSA LIMA", node: "Privacidade", login: "cpulima"},
+            {nome: "RAFAEL JOSE DE LUNA CAVALCANTI", node: "Espetáculo", login: "cpucavalcanti"},
+            {nome: "AILA DOS SANTOS TORRES", node: "Origem", login: "cputorres"},
+            {nome: "MARIA LUISA GUEIROS DA SILVA", node: "Discernimento", login: "cpusilva"}
+          ],
+          "3E": [
+            {nome: "ANA LUIZA BANDEIRA FARIAS", node: "Controle", login: "cpufarias"},
+            {nome: "LUANA FRANCA VIEIRA DE SOUZA", node: "Passividade", login: "cpusouza"},
+            {nome: "AUREA BEATRIZ DE SOUZA ROCHA", node: "Utilitarismo", login: "cpurocha"},
+            {nome: "LIDIA SUELEN DOS SANTOS SILVA", node: "Censura", login: "cpusilva"},
+            {nome: "ELIONAY MENDES DA SILVA", node: "Conveniência", login: "cpusilva"}
+          ]
+        };
+
+        const CLUSTERS_DB = {
+          "3A": {nome: "DEBORA LAURA OLIVEIRA DA SILVA", login: "celadebora3a"},
+          "3B": {nome: "RAFAELLY MARIA DE OLIVEIRA CARVALHO", login: "celarafa3b"},
+          "3C": {nome: "SARAH EMANUELLI NERI GIMINO", login: "celasarah3c"},
+          "3D": {nome: "LUCCA OLIVER MUNIZ DA SILVA", login: "celalucca3d"},
+          "3E": {nome: "RENAN CAETANO FERREIRA DA COSTA", login: "celarenan3e"}
+        };
+
+        const PASSWORDS = {
+          "3A": "apego", "3B": "dogma", "3C": "ilusao", "3D": "persona", "3E": "sistema", "MASTER": "algoritmo"
+        };
+
+        // ESTADO GLOBAL DA APLICAÇÃO (Persistência via LocalStorage)
+        let state = {
+          answers: JSON.parse(localStorage.getItem('node_answers') || '{}'),
+          publishedNodes: JSON.parse(localStorage.getItem('node_published') || '{}'),
+          currentUser: null
+        };
+
+        function saveState() {
+            localStorage.setItem('node_answers', JSON.stringify(state.answers));
+            localStorage.setItem('node_published', JSON.stringify(state.publishedNodes));
+        }
+
+        // INICIALIZAÇÃO
+        window.onload = function() {
+            toggleLoginFields();
+        };
+
+        function toggleLoginFields() {
+            const role = document.getElementById('loginRole').value;
+            const groupStudent = document.getElementById('groupStudent');
+            const groupCpu = document.getElementById('groupCpu');
+            const groupTurma = document.getElementById('groupTurma');
+            const lblPassword = document.getElementById('lblPassword');
+
+            if (role === 'EXECUTOR') {
+                groupTurma.classList.remove('hidden');
+                groupStudent.classList.remove('hidden');
+                groupCpu.classList.add('hidden');
+                lblPassword.innerText = "SENHA DA TURMA";
+                populateLoginStudents();
+            } else if (role === 'MASTER') {
+                groupTurma.classList.add('hidden');
+                groupStudent.classList.add('hidden');
+                groupCpu.classList.add('hidden');
+                lblPassword.innerText = "CHAVE MESTRA (MASTER)";
+            } else if (role === 'CLUSTER') {
+                groupTurma.classList.remove('hidden');
+                groupStudent.classList.add('hidden');
+                groupCpu.classList.add('hidden');
+                lblPassword.innerText = "CHAVE CLUSTER (TURMA)";
+            } else if (role === 'CPU') {
+                groupTurma.classList.remove('hidden');
+                groupStudent.classList.add('hidden');
+                groupCpu.classList.remove('hidden');
+                lblPassword.innerText = "CHAVE DE ACESSO CPU";
+                populateCpuList();
+            }
+        }
+
+        function populateLoginStudents() {
+            const turma = document.getElementById('loginTurma').value;
+            const select = document.getElementById('loginStudentName');
+            select.innerHTML = '';
+            
+            const students = EXECUTORS_DB.filter(s => s.turma === turma);
+            students.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.matricula;
+                opt.innerText = s.nome;
+                select.appendChild(opt);
+            });
+            if(document.getElementById('loginRole').value === 'CPU') populateCpuList();
+        }
+
+        function populateCpuList() {
+            const turma = document.getElementById('loginTurma').value;
+            const select = document.getElementById('loginCpuName');
+            select.innerHTML = '';
+            
+            CPUS_DB[turma].forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.login;
+                opt.innerText = `${c.nome} (${c.node})`;
+                select.appendChild(opt);
+            });
+        }
+
+        // AUTENTICAÇÃO E LOGIN
+        function handleLogin() {
+            const role = document.getElementById('loginRole').value;
+            const turma = document.getElementById('loginTurma').value;
+            const pass = document.getElementById('loginPassword').value.trim();
+
+            if (role === 'MASTER') {
+                if (pass === PASSWORDS.MASTER) {
+                    state.currentUser = { role: 'MASTER' };
+                    showScreen('screenMaster');
+                    renderMasterView();
+                } else alert('Senha Master Inválida!');
+            } 
+            else if (role === 'EXECUTOR') {
+                const matricula = document.getElementById('loginStudentName').value;
+                const student = EXECUTORS_DB.find(s => s.matricula === matricula);
+                if (pass.toLowerCase() === PASSWORDS[turma].toLowerCase()) {
+                    state.currentUser = { role: 'EXECUTOR', ...student };
+                    showScreen('screenExecutor');
+                    renderExecutorView();
+                } else alert('Senha da Turma Inválida!');
+            }
+            else if (role === 'CLUSTER') {
+                if (pass.toLowerCase() === CLUSTERS_DB[turma].login.toLowerCase()) {
+                    state.currentUser = { role: 'CLUSTER', turma, ...CLUSTERS_DB[turma] };
+                    showScreen('screenViewer');
+                    renderViewerView('CLUSTER');
+                } else alert('Chave do Cluster Inválida!');
+            }
+            else if (role === 'CPU') {
+                const cpuLogin = document.getElementById('loginCpuName').value;
+                const cpuObj = CPUS_DB[turma].find(c => c.login === cpuLogin);
+                if (pass.toLowerCase() === cpuObj.login.toLowerCase()) {
+                    state.currentUser = { role: 'CPU', turma, ...cpuObj };
+                    showScreen('screenViewer');
+                    renderViewerView('CPU');
+                } else alert('Chave da CPU Inválida!');
+            }
+        }
+
+        function logout() {
+            state.currentUser = null;
+            document.getElementById('currentUserBadge').classList.add('hidden');
+            document.getElementById('btnLogout').classList.add('hidden');
+            showScreen('screenLogin');
+        }
+
+        function showScreen(screenId) {
+            ['screenLogin', 'screenMaster', 'screenExecutor', 'screenViewer'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+
+            if (state.currentUser) {
+                document.getElementById('currentUserBadge').classList.remove('hidden');
+                document.getElementById('btnLogout').classList.remove('hidden');
+                document.getElementById('userRoleText').innerText = `${state.currentUser.role} // ${state.currentUser.nome || 'PROFESSOR'}`;
+            }
+        }
+
+        // =========================================================
+        // LÓGICA DO MASTER (PROFESSOR)
+        // =========================================================
+        function renderMasterView() {
+            const turma = document.getElementById('masterTurmaSelect').value;
+            const nodesGrid = document.getElementById('masterNodesGrid');
+            const studentTable = document.getElementById('masterStudentTable');
+            nodesGrid.innerHTML = ''; studentTable.innerHTML = '';
+
+            const cpus = CPUS_DB[turma];
+            const executors = EXECUTORS_DB.filter(s => s.turma === turma);
+            document.getElementById('masterStudentCount').innerText = executors.length;
+
+            // Renderizar 5 Nodes da Turma
+            cpus.forEach(cpu => {
+                const pubKey = `${turma}-${cpu.node}`;
+                const isPublished = !!state.publishedNodes[pubKey];
+                
+                // Pessoas alocadas neste node
+                const allocatedStudents = executors.filter(s => state.answers[s.matricula] && state.answers[s.matricula].node === cpu.node);
+
+                const card = document.createElement('div');
+                card.className = 'node-card';
+                card.innerHTML = `
+                    <div>
+                        <div class="node-header">
+                            <div class="node-name">NODE ${cpu.node.toUpperCase()}</div>
+                            <div class="node-cpu">CPU: ${cpu.nome}</div>
+                        </div>
+                        <div class="node-students-list">
+                            ${allocatedStudents.map(s => {
+                                const ans = state.answers[s.matricula];
+                                const isManual = ans && ans.origem_alocacao === 'MANUAL_PROFESSOR';
+                                return `
+                                    <div class="student-item">
+                                        <span>${s.nome} ${isManual ? '<span class="badge badge-manual" title="Alocado Manualmente pelo Mestre">M</span>' : ''}</span>
+                                        <button class="btn-remove-student" onclick="unassignStudent('${s.matricula}')" title="Remover do Node">×</button>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                        <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">TOTAL: ${allocatedStudents.length} EXECUTORES</div>
+                        <button class="cyber-button ${isPublished ? 'btn-danger' : 'btn-success'}" style="width: 100%; font-size: 0.7rem;" onclick="togglePublishNode('${pubKey}')">
+                            ${isPublished ? 'DESPUBLICAR NODE' : 'PUBLICAR NODE'}
+                        </button>
+                    </div>
+                `;
+                nodesGrid.appendChild(card);
+            });
+
+            // Renderizar Tabela dos Executores
+            executors.forEach(s => {
+                const ans = state.answers[s.matricula];
+                const hasResponded = !!ans;
+                const currentNode = ans ? ans.node : 'Sem Node';
+                const origem = ans ? (ans.origem_alocacao || 'ALGORITMO') : null;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: bold; color: #fff;">${s.nome}</td>
+                    <td>${s.matricula}</td>
+                    <td>
+                        <span class="badge ${hasResponded ? 'badge-success' : 'badge-pending'}">
+                            ${hasResponded ? 'RESPONDIDO' : 'PENDENTE'}
+                        </span>
+                    </td>
+                    <td style="color: var(--neon-blue); font-weight: bold;">
+                        ${currentNode}
+                        ${origem === 'MANUAL_PROFESSOR' ? '<span class="badge badge-manual">MANUAL</span>' : (origem === 'ALGORITMO' ? '<span class="badge badge-algo">AUTO</span>' : '')}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 6px;">
+                            ${hasResponded ? `<button class="cyber-button" style="padding: 4px 8px; font-size: 0.75rem;" onclick="viewAnswers('${s.matricula}')">VER</button>` : ''}
+                            ${hasResponded ? `<button class="cyber-button btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="resetAnswer('${s.matricula}')">EXCLUIR</button>` : ''}
+                            <select class="cyber-select" style="padding: 2px 4px; font-size: 0.75rem; width: auto;" onchange="manualAssign('${s.matricula}', this.value)">
+                                <option value="">Alocar...</option>
+                                ${cpus.map(c => `<option value="${c.node}" ${currentNode === c.node ? 'selected' : ''}>${c.node}</option>`).join('')}
+                            </select>
+                        </div>
+                    </td>
+                `;
+                studentTable.appendChild(tr);
+            });
+        }
+
+        function togglePublishNode(pubKey) {
+            state.publishedNodes[pubKey] = !state.publishedNodes[pubKey];
+            saveState();
+            renderMasterView();
+        }
+
+        function unassignStudent(matricula) {
+            if(state.answers[matricula]) {
+                delete state.answers[matricula].node;
+                delete state.answers[matricula].origem_alocacao;
+                saveState();
+                renderMasterView();
+            }
+        }
+
+        function manualAssign(matricula, nodeName) {
+            if(!nodeName) return;
+            if(!state.answers[matricula]) {
+                state.answers[matricula] = { 
+                    answers: { q1: "N/A", q2: nodeName, q3: "N/A", skills: [], q5: "N/A", q6: "N/A" }, 
+                    node: nodeName, 
+                    origem_alocacao: 'MANUAL_PROFESSOR' 
+                };
+            } else {
+                state.answers[matricula].node = nodeName;
+                state.answers[matricula].origem_alocacao = 'MANUAL_PROFESSOR';
+            }
+            saveState();
+            renderMasterView();
+        }
+
+        function resetAnswer(matricula) {
+            if(confirm("Excluir resposta do aluno para que ele responda novamente?")) {
+                delete state.answers[matricula];
+                saveState();
+                renderMasterView();
+            }
+        }
+
+        function viewAnswers(matricula) {
+            const student = EXECUTORS_DB.find(s => s.matricula === matricula);
+            const ans = state.answers[matricula];
+            if(!ans) return;
+
+            document.getElementById('modalStudentName').innerText = `${student.nome} (${student.turma})`;
+            const container = document.getElementById('modalAnswersContent');
+            const data = ans.answers;
+
+            container.innerHTML = `
+                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
+                    <strong style="color: var(--neon-blue);">EIXO 1 - LEITURA:</strong> ${data.q1 || 'N/A'}
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
+                    <strong style="color: var(--neon-blue);">EIXO 1 - TÓPICO PRINCIPAL:</strong> ${data.q2 || 'N/A'}
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
+                    <strong style="color: var(--neon-blue);">EIXO 1 - TÓPICO SECUNDÁRIO:</strong> ${data.q3 || 'N/A'}
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-green);">
+                    <strong style="color: var(--neon-green);">EIXO 2 - HABILIDADES:</strong> ${(data.skills && data.skills.length) ? data.skills.join(', ') : 'Nenhuma'}
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
+                    <strong style="color: var(--neon-blue);">EIXO 3 - DISPONIBILIDADE:</strong> ${data.q5 || 'N/A'}
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
+                    <strong style="color: var(--neon-blue);">EIXO 4 - PERFIL DE ATUAÇÃO:</strong> ${data.q6 || 'N/A'}
+                </div>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-dim);">
+                    ORIGEM DA ALOCAÇÃO: <strong style="color: #fff;">${ans.origem_alocacao || 'ALGORITMO'}</strong>
+                </div>
+            `;
+            document.getElementById('modalAnswers').classList.remove('hidden');
+        }
+
+        function closeAnswersModal() {
+            document.getElementById('modalAnswers').classList.add('hidden');
+        }
+
+        // =========================================================
+        // LÓGICA DO EXECUTOR E FORMULÁRIO DINÂMICO
+        // =========================================================
+        function renderExecutorView() {
+            const student = state.currentUser;
+            const ans = state.answers[student.matricula];
+
+            if(!ans) {
+                document.getElementById('execFormCard').classList.remove('hidden');
+                document.getElementById('execResultCard').classList.add('hidden');
+                setupDynamicForm();
+            } else {
+                document.getElementById('execFormCard').classList.add('hidden');
+                document.getElementById('execResultCard').classList.remove('hidden');
+
+                const pubKey = `${student.turma}-${ans.node}`;
+                const isPublished = !!state.publishedNodes[pubKey];
+
+                if(!isPublished) {
+                    document.getElementById('execWaiting').classList.remove('hidden');
+                    document.getElementById('execPublished').classList.add('hidden');
+                } else {
+                    document.getElementById('execWaiting').classList.add('hidden');
+                    document.getElementById('execPublished').classList.remove('hidden');
+
+                    const cpuObj = CPUS_DB[student.turma].find(c => c.node === ans.node);
+                    document.getElementById('execNodeTitle').innerText = `NODE ${ans.node.toUpperCase()}`;
+                    document.getElementById('execCpuTitle').innerText = cpuObj ? cpuObj.nome : '---';
+
+                    const teammates = EXECUTORS_DB.filter(s => s.turma === student.turma && state.answers[s.matricula] && state.answers[s.matricula].node === ans.node);
+                    document.getElementById('execTeamList').innerHTML = teammates.map(t => `
+                        <div style="font-size: 0.9rem; color: #fff; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            ◈ ${t.nome}
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        function setupDynamicForm() {
+            const turma = state.currentUser.turma;
+            const themeInfo = THEMES_DB[turma];
+
+            // Atualizar label da Q1
+            document.getElementById('lblQ1').innerText = `1. LEITURA DO CONTO DA TURMA ("${themeInfo.conto.toUpperCase()}" - Tema Central: ${themeInfo.tema})`;
+
+            // Preencher Q2
+            const selectQ2 = document.getElementById('q2');
+            selectQ2.innerHTML = '<option value="">Selecione a 1ª opção de tópico...</option>';
+            
+            themeInfo.nodes.forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n.name;
+                opt.innerText = `${n.name} — ${n.topic}`;
+                selectQ2.appendChild(opt);
+            });
+
+            // Resetar Q3
+            const selectQ3 = document.getElementById('q3');
+            selectQ3.innerHTML = '<option value="">Selecione a 2ª opção de tópico...</option>';
+        }
+
+        function updateQ3Options() {
+            const turma = state.currentUser.turma;
+            const themeInfo = THEMES_DB[turma];
+            const q2Val = document.getElementById('q2').value;
+            const selectQ3 = document.getElementById('q3');
+
+            selectQ3.innerHTML = '<option value="">Selecione a 2ª opção de tópico...</option>';
+
+            themeInfo.nodes.forEach(n => {
+                if (n.name !== q2Val) {
+                    const opt = document.createElement('option');
+                    opt.value = n.name;
+                    opt.innerText = `${n.name} — ${n.topic}`;
+                    selectQ3.appendChild(opt);
+                }
+            });
+        }
+
+        function limitSkillsCheckboxes(checkbox) {
+            const checked = document.querySelectorAll('input[name="q4_skills"]:checked');
+            if (checked.length > 3) {
+                checkbox.checked = false;
+                alert("Você pode selecionar no máximo 3 habilidades.");
+            }
+        }
+
+        // ALGORITMO DE ALOCAÇÃO COM MATRIZ DE CAPACIDADE E COMPLEMENTARIDADE
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const q1 = document.getElementById('q1').value;
+            const q2 = document.getElementById('q2').value;
+            const q3 = document.getElementById('q3').value;
+            const q5 = document.getElementById('q5').value;
+            const q6 = document.getElementById('q6').value;
+
+            const selectedSkills = Array.from(document.querySelectorAll('input[name="q4_skills"]:checked')).map(cb => cb.value);
+
+            if (selectedSkills.length === 0) {
+                alert("Por favor, selecione pelo menos 1 habilidade prática no Eixo 2.");
+                return;
+            }
+
+            const student = state.currentUser;
+            const turma = student.turma;
+            const executorsTurma = EXECUTORS_DB.filter(s => s.turma === turma);
+            
+            // Capacidade máxima ideal de cada node na turma
+            const maxCapacity = Math.ceil(executorsTurma.length / 5);
+
+            // Contar quantos alunos já foram alocados em cada Node da turma
+            const nodeCounts = {};
+            THEMES_DB[turma].nodes.forEach(n => nodeCounts[n.name] = 0);
+
+            Object.keys(state.answers).forEach(mat => {
+                const ans = state.answers[mat];
+                const st = EXECUTORS_DB.find(s => s.matricula === mat);
+                if (st && st.turma === turma && ans.node) {
+                    nodeCounts[ans.node] = (nodeCounts[ans.node] || 0) + 1;
+                }
+            });
+
+            // Lógica do Algoritmo de Decisão:
+            let assignedNode = "";
+
+            // Prioridade 1: Tópico Principal (Q2) se não exceder capacidade
+            if (nodeCounts[q2] < maxCapacity) {
+                assignedNode = q2;
+            } 
+            // Prioridade 2: Tópico Secundário (Q3) se não exceder capacidade
+            else if (nodeCounts[q3] < maxCapacity) {
+                assignedNode = q3;
+            } 
+            // Prioridade 3: Transbordo Inteligente - Node com menor lotação
+            else {
+                let minCount = Infinity;
+                let candidateNode = q2;
+
+                Object.keys(nodeCounts).forEach(nodeName => {
+                    if (nodeCounts[nodeName] < minCount) {
+                        minCount = nodeCounts[nodeName];
+                        candidateNode = nodeName;
+                    }
+                });
+                assignedNode = candidateNode;
+            }
+
+            // Salvar no estado
+            state.answers[student.matricula] = {
+                answers: {
+                    q1, q2, q3, skills: selectedSkills, q5, q6
+                },
+                node: assignedNode,
+                origem_alocacao: 'ALGORITMO'
+            };
+
+            saveState();
+            renderExecutorView();
+        }
+
+        // =========================================================
+        // LÓGICA DO CLUSTER / CPU
+        // =========================================================
+        function renderViewerView(role) {
+            const user = state.currentUser;
+            document.getElementById('viewerTitle').innerText = role === 'CLUSTER' ? `MONITORAMENTO CLUSTER - ${user.turma}` : `PAINEL CPU - NODE ${user.node.toUpperCase()}`;
+            document.getElementById('viewerSub').innerText = user.nome;
+
+            const grid = document.getElementById('viewerGrid');
+            grid.innerHTML = '';
+
+            let cpusToRender = CPUS_DB[user.turma];
+            if(role === 'CPU') cpusToRender = cpusToRender.filter(c => c.node === user.node);
+
+            cpusToRender.forEach(cpu => {
+                const executors = EXECUTORS_DB.filter(s => s.turma === user.turma);
+                const allocatedStudents = executors.filter(s => state.answers[s.matricula] && state.answers[s.matricula].node === cpu.node);
+
+                const card = document.createElement('div');
+                card.className = 'node-card';
+                card.innerHTML = `
+                    <div class="node-header">
+                        <div class="node-name">NODE ${cpu.node.toUpperCase()}</div>
+                        <div class="node-cpu">LÍDER: ${cpu.nome}</div>
+                    </div>
+                    <div class="node-students-list">
+                        ${allocatedStudents.map(s => `
+                            <div class="student-item">
+                                <span>${s.nome}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: var(--neon-blue);">
+                        TOTAL: ${allocatedStudents.length} EXECUTORES
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
