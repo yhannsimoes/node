@@ -413,19 +413,21 @@
         <div id="screenMaster" class="hidden">
             
             <div class="cyber-card">
-                <div class="card-title">
-                    <span>PAINEL DE CONTROLE MASTER</span>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <span style="font-size: 0.85rem; color: var(--text-dim);">SELECIONAR TURMA:</span>
-                        <select id="masterTurmaSelect" class="cyber-select" style="width: 120px; padding: 4px 8px;" onchange="renderMasterView()">
-                            <option value="3A">3º A</option>
-                            <option value="3B">3º B</option>
-                            <option value="3C">3º C</option>
-                            <option value="3D">3º D</option>
-                            <option value="3E">3º E</option>
-                        </select>
-                    </div>
-                </div>
+         <div class="card-title">
+    <span>PAINEL DE CONTROLE MASTER</span>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="cyber-button btn-success" style="font-size: 0.75rem;" onclick="distributeUnansweredExecutors()">⚡ DISTRIBUIR EXECUTORES PENDENTES</button>
+        
+        <span style="font-size: 0.85rem; color: var(--text-dim);">TURMA:</span>
+        <select id="masterTurmaSelect" class="cyber-select" style="width: 120px; padding: 4px 8px;" onchange="renderMasterView()">
+            <option value="3A">3º A</option>
+            <option value="3B">3º B</option>
+            <option value="3C">3º C</option>
+            <option value="3D">3º D</option>
+            <option value="3E">3º E</option>
+        </select>
+    </div>
+</div>
 
                 <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px;">
                     Acompanhamento em tempo real dos Nodes da turma selecionada. Gerencie a alocação e publique a visualização para os executores.
