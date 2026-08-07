@@ -318,6 +318,12 @@
             max-height: 85vh;
             overflow-y: auto;
         }
+        .badge-dist { 
+    background: rgba(255, 136, 0, 0.15); 
+    color: #ff8800; 
+    border: 1px solid #ff8800; 
+    margin-left: 4px; 
+}
 
         /* FORMULÁRIO EXECUTOR */
         .form-question { margin-bottom: 20px; }
@@ -1084,165 +1090,171 @@
         }
 
         // =========================================================
-        // LÓGICA DO MASTER (PROFESSOR)
-        // =========================================================
-        function renderMasterView() {
-            const turma = document.getElementById('masterTurmaSelect').value;
-            const nodesGrid = document.getElementById('masterNodesGrid');
-            const studentTable = document.getElementById('masterStudentTable');
-            nodesGrid.innerHTML = ''; studentTable.innerHTML = '';
+       // =========================================================
+// LÓGICA DO MASTER (PROFESSOR) - COM DISTRIBUIÇÃO PENDENTE
+// =========================================================
 
-            const cpus = CPUS_DB[turma];
-            const executors = EXECUTORS_DB.filter(s => s.turma === turma);
-            document.getElementById('masterStudentCount').innerText = executors.length;
+function distributeUnansweredExecutors() {
+    const turma = document.getElementById('masterTurmaSelect').value;
+    const executors = EXECUTORS_DB.filter(s => s.turma === turma);
+    const cpus = CPUS_DB[turma];
+    
+    // Filtra executores que ainda não têm node alocado
+    const pendingExecutors = executors.filter(s => !state.answers[s.matricula] || !state.answers[s.matricula].node);
+    
+    if (pendingExecutors.length === 0) {
+        alert(`Todos os executores da turma ${turma} já estão alocados em um Node!`);
+        return;
+    }
 
-            // Renderizar 5 Nodes da Turma
-            cpus.forEach(cpu => {
-                const pubKey = `${turma}-${cpu.node}`;
-                const isPublished = !!state.publishedNodes[pubKey];
-                
-                // Pessoas alocadas neste node
-                const allocatedStudents = executors.filter(s => state.answers[s.matricula] && state.answers[s.matricula].node === cpu.node);
+    if (!confirm(`Deseja distribuir automaticamente os ${pendingExecutors.length} executores pendentes entre os Nodes da turma ${turma}?`)) {
+        return;
+    }
 
-                const card = document.createElement('div');
-                card.className = 'node-card';
-                card.innerHTML = `
-                    <div>
-                        <div class="node-header">
-                            <div class="node-name">NODE ${cpu.node.toUpperCase()}</div>
-                            <div class="node-cpu">CPU: ${cpu.nome}</div>
-                        </div>
-                        <div class="node-students-list">
-                            ${allocatedStudents.map(s => {
-                                const ans = state.answers[s.matricula];
-                                const isManual = ans && ans.origem_alocacao === 'MANUAL_PROFESSOR';
-                                return `
-                                    <div class="student-item">
-                                        <span>${s.nome} ${isManual ? '<span class="badge badge-manual" title="Alocado Manualmente pelo Mestre">M</span>' : ''}</span>
-                                        <button class="btn-remove-student" onclick="unassignStudent('${s.matricula}')" title="Remover do Node">×</button>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                        <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">TOTAL: ${allocatedStudents.length} EXECUTORES</div>
-                        <button class="cyber-button ${isPublished ? 'btn-danger' : 'btn-success'}" style="width: 100%; font-size: 0.7rem;" onclick="togglePublishNode('${pubKey}')">
-                            ${isPublished ? 'DESPUBLICAR NODE' : 'PUBLICAR NODE'}
-                        </button>
-                    </div>
-                `;
-                nodesGrid.appendChild(card);
-            });
+    // Contagem atual por Node na turma
+    const nodeCounts = {};
+    cpus.forEach(c => nodeCounts[c.node] = 0);
 
-            // Renderizar Tabela dos Executores
-            executors.forEach(s => {
-                const ans = state.answers[s.matricula];
-                const hasResponded = !!ans;
-                const currentNode = ans ? ans.node : 'Sem Node';
-                const origem = ans ? (ans.origem_alocacao || 'ALGORITMO') : null;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: bold; color: #fff;">${s.nome}</td>
-                    <td>${s.matricula}</td>
-                    <td>
-                        <span class="badge ${hasResponded ? 'badge-success' : 'badge-pending'}">
-                            ${hasResponded ? 'RESPONDIDO' : 'PENDENTE'}
-                        </span>
-                    </td>
-                    <td style="color: var(--neon-blue); font-weight: bold;">
-                        ${currentNode}
-                        ${origem === 'MANUAL_PROFESSOR' ? '<span class="badge badge-manual">MANUAL</span>' : (origem === 'ALGORITMO' ? '<span class="badge badge-algo">AUTO</span>' : '')}
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 6px;">
-                            ${hasResponded ? `<button class="cyber-button" style="padding: 4px 8px; font-size: 0.75rem;" onclick="viewAnswers('${s.matricula}')">VER</button>` : ''}
-                            ${hasResponded ? `<button class="cyber-button btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="resetAnswer('${s.matricula}')">EXCLUIR</button>` : ''}
-                            <select class="cyber-select" style="padding: 2px 4px; font-size: 0.75rem; width: auto;" onchange="manualAssign('${s.matricula}', this.value)">
-                                <option value="">Alocar...</option>
-                                ${cpus.map(c => `<option value="${c.node}" ${currentNode === c.node ? 'selected' : ''}>${c.node}</option>`).join('')}
-                            </select>
-                        </div>
-                    </td>
-                `;
-                studentTable.appendChild(tr);
-            });
+    Object.keys(state.answers).forEach(mat => {
+        const ans = state.answers[mat];
+        const st = EXECUTORS_DB.find(s => s.matricula === mat);
+        if (st && st.turma === turma && ans.node) {
+            nodeCounts[ans.node] = (nodeCounts[ans.node] || 0) + 1;
         }
+    });
 
-        function togglePublishNode(pubKey) {
-            state.publishedNodes[pubKey] = !state.publishedNodes[pubKey];
-            saveState();
-        }
+    // Distribui de forma balanceada nos Nodes com menor lotação
+    pendingExecutors.forEach(student => {
+        let minNode = cpus[0].node;
+        let minCount = Infinity;
 
-        function unassignStudent(matricula) {
-            if(state.answers[matricula]) {
-                delete state.answers[matricula].node;
-                delete state.answers[matricula].origem_alocacao;
-                saveState();
+        // Procura o node com a menor quantidade de alunos
+        cpus.forEach(c => {
+            const count = nodeCounts[c.node] || 0;
+            if (count < minCount) {
+                minCount = count;
+                minNode = c.node;
             }
+        });
+
+        // Grava no banco com origem 'DISTRIBUIDOR'
+        state.answers[student.matricula] = {
+            answers: { 
+                q1: "Não respondeu (Atribuição Automática)", 
+                q2: minNode, 
+                q3: "N/A", 
+                skills: ["Distribuição Automática"], 
+                q5: "N/A", 
+                q6: "N/A" 
+            },
+            node: minNode,
+            origem_alocacao: 'DISTRIBUIDOR'
+        };
+
+        nodeCounts[minNode]++;
+    });
+
+    saveState();
+    alert(`${pendingExecutors.length} executores foram distribuídos nos Nodes com sucesso!`);
+}
+
+function renderMasterView() {
+    const turma = document.getElementById('masterTurmaSelect').value;
+    const nodesGrid = document.getElementById('masterNodesGrid');
+    const studentTable = document.getElementById('masterStudentTable');
+    nodesGrid.innerHTML = ''; studentTable.innerHTML = '';
+
+    const cpus = CPUS_DB[turma];
+    const executors = EXECUTORS_DB.filter(s => s.turma === turma);
+    document.getElementById('masterStudentCount').innerText = executors.length;
+
+    // Renderizar 5 Nodes da Turma
+    cpus.forEach(cpu => {
+        const pubKey = `${turma}-${cpu.node}`;
+        const isPublished = !!state.publishedNodes[pubKey];
+        
+        const allocatedStudents = executors.filter(s => state.answers[s.matricula] && state.answers[s.matricula].node === cpu.node);
+
+        const card = document.createElement('div');
+        card.className = 'node-card';
+        card.innerHTML = `
+            <div>
+                <div class="node-header">
+                    <div class="node-name">NODE ${cpu.node.toUpperCase()}</div>
+                    <div class="node-cpu">CPU: ${cpu.nome}</div>
+                </div>
+                <div class="node-students-list">
+                    ${allocatedStudents.map(s => {
+                        const ans = state.answers[s.matricula];
+                        const isManual = ans && ans.origem_alocacao === 'MANUAL_PROFESSOR';
+                        const isDist = ans && ans.origem_alocacao === 'DISTRIBUIDOR';
+                        
+                        return `
+                            <div class="student-item">
+                                <span>
+                                    ${s.nome} 
+                                    ${isManual ? '<span class="badge badge-manual" title="Alocado Manualmente">M</span>' : ''}
+                                    ${isDist ? '<span class="badge badge-dist" title="Distribuído Automoticamente (Não respondeu)">D</span>' : ''}
+                                </span>
+                                <button class="btn-remove-student" onclick="unassignStudent('${s.matricula}')" title="Remover do Node">×</button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">TOTAL: ${allocatedStudents.length} EXECUTORES</div>
+                <button class="cyber-button ${isPublished ? 'btn-danger' : 'btn-success'}" style="width: 100%; font-size: 0.7rem;" onclick="togglePublishNode('${pubKey}')">
+                    ${isPublished ? 'DESPUBLICAR NODE' : 'PUBLICAR NODE'}
+                </button>
+            </div>
+        `;
+        nodesGrid.appendChild(card);
+    });
+
+    // Renderizar Tabela dos Executores
+    executors.forEach(s => {
+        const ans = state.answers[s.matricula];
+        const hasResponded = !!ans && ans.answers.q1 !== "Não respondeu (Atribuição Automática)";
+        const currentNode = ans ? ans.node : 'Sem Node';
+        const origem = ans ? (ans.origem_alocacao || 'ALGORITMO') : null;
+
+        let badgeOrigemHtml = '';
+        if (origem === 'MANUAL_PROFESSOR') {
+            badgeOrigemHtml = '<span class="badge badge-manual">MANUAL</span>';
+        } else if (origem === 'DISTRIBUIDOR') {
+            badgeOrigemHtml = '<span class="badge badge-dist">D (DIST)</span>';
+        } else if (origem === 'ALGORITMO') {
+            badgeOrigemHtml = '<span class="badge badge-algo">AUTO</span>';
         }
 
-        function manualAssign(matricula, nodeName) {
-            if(!nodeName) return;
-            if(!state.answers[matricula]) {
-                state.answers[matricula] = { 
-                    answers: { q1: "N/A", q2: nodeName, q3: "N/A", skills: [], q5: "N/A", q6: "N/A" }, 
-                    node: nodeName, 
-                    origem_alocacao: 'MANUAL_PROFESSOR' 
-                };
-            } else {
-                state.answers[matricula].node = nodeName;
-                state.answers[matricula].origem_alocacao = 'MANUAL_PROFESSOR';
-            }
-            saveState();
-        }
-
-        function resetAnswer(matricula) {
-            if(confirm("Excluir resposta do aluno para que ele responda novamente?")) {
-                delete state.answers[matricula];
-                saveState();
-            }
-        }
-
-        function viewAnswers(matricula) {
-            const student = EXECUTORS_DB.find(s => s.matricula === matricula);
-            const ans = state.answers[matricula];
-            if(!ans) return;
-
-            document.getElementById('modalStudentName').innerText = `${student.nome} (${student.turma})`;
-            const container = document.getElementById('modalAnswersContent');
-            const data = ans.answers;
-
-            container.innerHTML = `
-                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
-                    <strong style="color: var(--neon-blue);">EIXO 1 - LEITURA:</strong> ${data.q1 || 'N/A'}
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: bold; color: #fff;">${s.nome}</td>
+            <td>${s.matricula}</td>
+            <td>
+                <span class="badge ${hasResponded ? 'badge-success' : 'badge-pending'}">
+                    ${hasResponded ? 'RESPONDIDO' : 'PENDENTE'}
+                </span>
+            </td>
+            <td style="color: var(--neon-blue); font-weight: bold;">
+                ${currentNode}
+                ${badgeOrigemHtml}
+            </td>
+            <td>
+                <div style="display: flex; gap: 6px;">
+                    ${ans ? `<button class="cyber-button" style="padding: 4px 8px; font-size: 0.75rem;" onclick="viewAnswers('${s.matricula}')">VER</button>` : ''}
+                    ${ans ? `<button class="cyber-button btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="resetAnswer('${s.matricula}')">EXCLUIR</button>` : ''}
+                    <select class="cyber-select" style="padding: 2px 4px; font-size: 0.75rem; width: auto;" onchange="manualAssign('${s.matricula}', this.value)">
+                        <option value="">Alocar...</option>
+                        ${cpus.map(c => `<option value="${c.node}" ${currentNode === c.node ? 'selected' : ''}>${c.node}</option>`).join('')}
+                    </select>
                 </div>
-                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
-                    <strong style="color: var(--neon-blue);">EIXO 1 - TÓPICO PRINCIPAL:</strong> ${data.q2 || 'N/A'}
-                </div>
-                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
-                    <strong style="color: var(--neon-blue);">EIXO 1 - TÓPICO SECUNDÁRIO:</strong> ${data.q3 || 'N/A'}
-                </div>
-                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-green);">
-                    <strong style="color: var(--neon-green);">EIXO 2 - HABILIDADES:</strong> ${(data.skills && data.skills.length) ? data.skills.join(', ') : 'Nenhuma'}
-                </div>
-                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
-                    <strong style="color: var(--neon-blue);">EIXO 3 - DISPONIBILIDADE:</strong> ${data.q5 || 'N/A'}
-                </div>
-                <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border-left: 3px solid var(--neon-blue);">
-                    <strong style="color: var(--neon-blue);">EIXO 4 - PERFIL DE ATUAÇÃO:</strong> ${data.q6 || 'N/A'}
-                </div>
-                <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-dim);">
-                    ORIGEM DA ALOCAÇÃO: <strong style="color: #fff;">${ans.origem_alocacao || 'ALGORITMO'}</strong>
-                </div>
-            `;
-            document.getElementById('modalAnswers').classList.remove('hidden');
-        }
-
-        function closeAnswersModal() {
-            document.getElementById('modalAnswers').classList.add('hidden');
-        }
+            </td>
+        `;
+        studentTable.appendChild(tr);
+    });
+}
 
         // =========================================================
         // LÓGICA DO EXECUTOR E FORMULÁRIO DINÂMICO
