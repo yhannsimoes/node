@@ -1104,24 +1104,45 @@ function togglePublishNode(pubKey) {
 // LÓGICA DO MASTER (PROFESSOR) - COM DISTRIBUIÇÃO PENDENTE
 // =========================================================
 
+}
 function distributeUnansweredExecutors() {
     const turma = document.getElementById('masterTurmaSelect').value;
     const executors = EXECUTORS_DB.filter(s => s.turma === turma);
     const cpus = CPUS_DB[turma];
     
-    // Filtra executores que ainda não têm node alocado
-    const pendingExecutors = executors.filter(s => !state.answers[s.matricula] || !state.answers[s.matricula].node);
+    // Identifica quem já foi distribuído automaticamente pelo botão anteriormente
+    const autoDistributed = executors.filter(s => state.answers[s.matricula] && state.answers[s.matricula].origem_alocacao === 'DISTRIBUIDOR');
     
-    if (pendingExecutors.length === 0) {
-        alert(`Todos os executores da turma ${turma} já estão alocados em um Node!`);
+    let pendingExecutors = executors.filter(s => !state.answers[s.matricula] || !state.answers[s.matricula].node);
+
+    // Se todos já estiverem alocados, mas houver distribuídos automáticos, oferece opção de redistribuir
+    if (pendingExecutors.length === 0 && autoDistributed.length > 0) {
+        if (confirm(`Todos os executores já estão alocados.\n\nDeseja REDISTRIBUIR os ${autoDistributed.length} executores automáticos para gerar uma NOVA combinação de grupos?`)) {
+            // Limpa as distribuições automáticas anteriores
+            autoDistributed.forEach(student => {
+                delete state.answers[student.matricula];
+            });
+            pendingExecutors = executors.filter(s => !state.answers[s.matricula] || !state.answers[s.matricula].node);
+        } else {
+            return;
+        }
+    } else if (pendingExecutors.length === 0) {
+        alert(`Todos os executores da turma ${turma} já estão alocados manualmente ou responderam ao formulário!`);
         return;
     }
 
-    if (!confirm(`Deseja distribuir automaticamente os ${pendingExecutors.length} executores pendentes entre os Nodes da turma ${turma}?`)) {
+    if (!confirm(`Deseja distribuir aleatoriamente os ${pendingExecutors.length} executores pendentes entre os Nodes da turma ${turma}?`)) {
         return;
     }
 
-    // Contagem atual por Node na turma
+    // Embaralha aleatoriamente a lista de alunos pendentes (Algoritmo Fisher-Yates)
+    const shuffledPending = [...pendingExecutors];
+    for (let i = shuffledPending.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledPending[i], shuffledPending[j]] = [shuffledPending[j], shuffledPending[i]];
+    }
+
+    // Contagem atual de cada Node na turma
     const nodeCounts = {};
     cpus.forEach(c => nodeCounts[c.node] = 0);
 
@@ -1133,13 +1154,15 @@ function distributeUnansweredExecutors() {
         }
     });
 
-    // Distribui de forma balanceada nos Nodes com menor lotação
-    pendingExecutors.forEach(student => {
-        let minNode = cpus[0].node;
+    // Distribui os alunos embaralhados nos Nodes com menor ocupação
+    shuffledPending.forEach(student => {
+        // Embaralha também a ordem dos Nodes em caso de empate de quantidade
+        const shuffledCpus = [...cpus].sort(() => Math.random() - 0.5);
+        
+        let minNode = shuffledCpus[0].node;
         let minCount = Infinity;
 
-        // Procura o node com a menor quantidade de alunos
-        cpus.forEach(c => {
+        shuffledCpus.forEach(c => {
             const count = nodeCounts[c.node] || 0;
             if (count < minCount) {
                 minCount = count;
@@ -1147,7 +1170,7 @@ function distributeUnansweredExecutors() {
             }
         });
 
-        // Grava no banco com origem 'DISTRIBUIDOR'
+        // Salva com origem 'DISTRIBUIDOR'
         state.answers[student.matricula] = {
             answers: { 
                 q1: "Não respondeu (Atribuição Automática)", 
@@ -1165,9 +1188,9 @@ function distributeUnansweredExecutors() {
     });
 
     saveState();
-    alert(`${pendingExecutors.length} executores foram distribuídos nos Nodes com sucesso!`);
+    renderMasterView();
+    alert(`${shuffledPending.length} executores foram distribuídos! Se quiser testar outra combinação de grupos, basta clicar no botão novamente.`);
 }
-
 function renderMasterView() {
     const turma = document.getElementById('masterTurmaSelect').value;
     const nodesGrid = document.getElementById('masterNodesGrid');
