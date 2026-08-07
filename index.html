@@ -1103,8 +1103,6 @@ function togglePublishNode(pubKey) {
        // =========================================================
 // LÓGICA DO MASTER (PROFESSOR) - COM DISTRIBUIÇÃO PENDENTE
 // =========================================================
-
-}
 function distributeUnansweredExecutors() {
     const turma = document.getElementById('masterTurmaSelect').value;
     const executors = EXECUTORS_DB.filter(s => s.turma === turma);
